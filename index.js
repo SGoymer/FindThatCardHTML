@@ -8,7 +8,7 @@ const cardObjectDefinitions = [
 const cardBackImgPath = "/images/cardback.png"
 
 //Store the card container HTML element as a constant
-const cardContainerElem = document.querySelector('.card-container')
+const cardContainerElem = document.querySelector(".card-container")
 
 //Create an HTML element (function seems overkill)
 function createElement(elemType) {
@@ -34,6 +34,32 @@ function addSrcToImageElem(imgElem, src) {
 function addChildElement(parentElem, childElem) {
     parentElem.appendChild(childElem)
 }
+
+
+//Map each card to its inital position
+//by mapping the id of that card to the appropriate grid cell
+function mapCardIdToGridCell(card) {
+    if(card.id == 1) {
+        return ".card-pos-a"
+    } else if (card.id == 2) {
+        return ".card-pos-b"
+    } else if (card.id == 3) {
+        return ".card-pos-c"
+    } else {
+        return ".card-pos-d"
+    }
+}
+
+//Map the card then add it as a child element to the grid cell
+function addCardToGridCell(card) {
+    const cardPositionClassName = mapCardIdToGridCell(card)
+
+    const cardPosElem = document.querySelector(cardPositionClassName)
+
+    addChildElement(cardPosElem, card)
+}
+
+
 
 //We need to create this to make a card
 /*
@@ -82,5 +108,18 @@ function createCard(cardItem) {
             addChildElement(cardFrontElem, cardFrontImg)
         addChildElement(cardInnerElem, cardBackElem)
             addChildElement(cardBackElem, cardBackImg)
+
+   //Map the card then add it as a child element to the grid cell
+   addCardToGridCell(cardElem)
+
 }    
 
+//Now create a card for each item in the cardObjectDefinitions array
+function createCards() {
+    cardObjectDefinitions.forEach((cardItem)=>{
+        createCard(cardItem)
+    })
+}
+
+//Now call it
+createCards()
