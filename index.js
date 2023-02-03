@@ -8,6 +8,18 @@ const cardObjectDefinitions = [
 const numCards = cardObjectDefinitions.length
 let cardPositions = []
 
+let gameInProgress = false
+let shufflingInProgress = false
+let cardsRevealed = false
+
+const currentGameStatusElem = document.querySelector("current-status")
+const winColour = "green"
+const loseColor = "red"
+
+//id of the "correct" card
+const correctCardId = 4
+
+
 const cardBackImgPath = "/images/cardback.png"
 
 
@@ -237,7 +249,6 @@ function returnGridAreasMappedToCardPos() {
 function dealCards() {
     addCardsToAppropriateCell()
     const areasTemplate = returnGridAreasMappedToCardPos()
-    alert(areasTemplate)
     transformGridArea(areasTemplate)
 }
 
@@ -275,7 +286,7 @@ function initialiseNewRound() {
 function startRound() {
     initialiseNewRound()
     collectCards()
-    //flipCards(true)
+    flipCards(true)
     shuffleCards()
 }
 
@@ -298,6 +309,52 @@ function loadGame() {
     //Wire up a click event to the playGame button
     //Note: ()=> is shorthand for a lambda function that takes no arguments
     playGameButtonElem.addEventListener("click", ()=>startGame())
+}
+
+
+//Check if the user should be allowed to select a card
+function canChooseCard() {
+    return gameInProgress == true && !shufflingInProgress && !cardsRevealed
+}
+
+//Choose a card. Allow only if can ChooseCard
+function chooseCard() {
+    if(canChooseCard()) {
+
+    }
+}
+
+//Update the HTML element elem to have display type display, colour color, and inner HTML innerHTML
+function updateStatusElement(elem, display, color, innerHTML) {
+
+    elem.style.display = display
+
+    //Only change the color/innerHTML if at least one is specified
+    if(arguments.length > 2) {
+        elem.style.color = color
+        elem.innerHTML = innerHTML
+    }
+}
+
+//Output the appropriate feedback to user
+function outputChoiceFeedBack(hit) {
+    if(hit) {
+        updateStatusElement(currentGameStatusElem, "block", winColour, "Bang on my friend")
+    } else {
+        updateStatusElement(currentGameStatusElem, "block", loseColour, "Absolute shambles mate")
+    }
+}
+
+
+//Check if the card is the "correct" one and output the appropriate feedback to user
+function evalulateCardChoice(card) {
+    if(card.id = correctCardId) {
+        //Give the user points
+        updateScore()
+        outputChoiceFeedBack(true)
+    } else {
+        outputChoiceFeedBack(false)
+    }
 }
 
 loadGame()
