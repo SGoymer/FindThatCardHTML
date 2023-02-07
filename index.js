@@ -23,8 +23,12 @@ const loseColour = "red"
 const primaryColour = "black"
 
 let roundNum = 0
-const maxRounds = 4
+const maxRounds = 3
 let score = 0
+
+let gameObj = {}
+
+const localStorageGameKey  = "FindIt!"
 
 //id of the "correct" card
 const correctCardId = 4
@@ -121,6 +125,7 @@ function createCard(cardItem) {
 
     const cardElem = createElement("div")
     addClassToElement(cardElem, "card")
+    addClassToElement(cardElem, "fly-in")
     addIdToElement(cardElem, cardItem.id)
 
 
@@ -231,6 +236,28 @@ function animateShuffle(shuffleCount) {
     }
 }
 
+//Animate the cards flying into the grid
+function cardFlyinEffect() {
+    const id = setInterval(flyIn, 200)
+    let cardCount = 0;
+
+    let count = 0
+
+    function flyIn() {
+        count++
+        if(cardCount == numCards) {
+            clearInterval(id)
+            playGameButtonElem.style.display = "inline-block"
+        }
+        //Control when each fly in animation occurs
+        if(count == 1 || count == 2 || count == 3 || count == 4) {
+            cardCount++
+            let card = document.getElementById(cardCount)
+            card.classList.remove("fly-in")
+        }
+    }
+}
+
 function randomiseCardPositions() {
     //generate two random numbers in [1, 2, ..., numCards]
     const random1 = Math.floor(Math.random() * numCards) + 1
@@ -325,6 +352,8 @@ function initialiseNewGame() {
     roundNum = 0
     score = 0
 
+    checkForIncompleteGame()
+
     shufflingInProgress = false
 
     //Make the score and round container elements visible
@@ -385,6 +414,8 @@ function loadGame() {
     //Get all card elements
     cards = document.querySelectorAll(".card")
 
+    cardFlyinEffect()
+
     //Wire up a click event to the playGame button
     //Note: ()=> is shorthand for a lambda function that takes no arguments
     playGameButtonElem.addEventListener("click", ()=>startGame())
@@ -398,11 +429,17 @@ function gameOver() {
     updateStatusElement(roundContainerElem, "none")
 
     const gameOverMessage = `Game Over! Final score: <span class = "badge">${score}</span> points.
-                             Click "Play Again" if you want another crack at it`
+                             <br>Click "Play Again" if you want another crack at it`
 
     updateStatusElement(currentGameStatusElem, "block", primaryColour, gameOverMessage)
-    updateStatusElement(playGameButtonElem, "flex", "", `<button id = "playGame" class="play-game" role="button">Play Again</button>`)
+    //updateStatusElement(playGameButtonElem, "inline-block")
+    //updateStatusElement(playGameButtonElem, "inline-block", "", `<button id = "playGame" class="play-game" role="button">Play Again</button>`)
+    updateStatusElement(playGameButtonElem, "inline-block", "", "Play Again")
+
     playGameButtonElem.disabled = false
+
+    //Remove the stored game data
+    removeLocalStorageItem(localStorageGameKey)
 }
 
 //Check if the user should be allowed to select a card
@@ -414,6 +451,9 @@ function canChooseCard() {
 function chooseCard(cardElem) {
     if(canChooseCard()) {
         evalulateCardChoice(cardElem)
+        
+        //Save the user's game to their device
+        saveGameObjectToLocalStorage(score, roundNum)
 
         //Flip over the chosen card
         flipCard(cardElem, false)
@@ -489,4 +529,71 @@ function evalulateCardChoice(card) {
     }
 }
 
+
 loadGame()
+
+
+
+
+
+
+
+
+
+
+
+
+
+//Local storage functions.
+//GameObj is saved to the user's local machine in JSON format on starting the game, saving score and round data
+//This is retrieved as the game is loaded, if present
+function getSerialisedObjectAsJSON(obj) {
+    return JSON.stringify(obj)
+}
+
+function getObjectFromJSON(json) {
+    return JSON.parse(json)
+}
+
+function updateLocalStorage(key, value) {
+    localStorage.setItem(key, value)
+}
+
+function removeLocalStorageItem(key) {
+    localStorage.removeItem(key)
+}
+
+function getLocalStorageItemValue(key) {
+    return localStorage.getItem(key)
+}
+
+function updateGameObject(score, roundNum) {
+    gameObj.score = score
+    gameObj.roundNum = roundNum
+}
+
+function saveGameObjectToLocalStorage(score, round) {
+    updateGameObject(score, round)
+    updateLocalStorage(localStorageGameKey, getSerialisedObjectAsJSON(gameObj))
+}
+
+function checkForIncompleteGame() {
+    const serialisedGameObj = getLocalStorageItemValue(localStorageGameKey)
+    //If the user has a game going
+    if(serialisedGameObj) {
+        gameObj = getObjectFromJSON(serialisedGameObj)
+
+        //If they reached game over, remove the stored game
+        //Note this is kinda bad since stored games will stay on their device
+        if(gameObj.round >= maxRounds) {
+            removeLocalStorageItem(localStorageGameKey)
+        } else {
+            if(confirm("Would you like to continue with your last game?")) {
+                //If user confirms, update the game data based on stored game
+                score = gameObj.score
+                roundNum = gameObj.roundNum
+            }
+            //If they don't confirm, score and round will be initialised to 0 as usual
+        }
+    }
+}

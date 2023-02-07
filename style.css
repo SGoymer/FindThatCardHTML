@@ -2,13 +2,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand&display=swap');
 
 :root {
-    --card-width: 157px;
-    --card-height: 220px;
+    --card-width-lg: 157px;
+    --card-height-lg: 220px;
+    --card-width-sm: 120px;
+    --card-height-sm: 168px;
     /*must have num-cards < num-rows*num-columns*/
     --num-cards: 4;
     --num-rows: 2;
     --num-columns: 2;
-    --card-horizontal-space: 100px;
+    --card-horizontal-space-lg: 100px;
+    --card-horizontal-space-sm: 50px;
     --badge-bg-color: red;
     --primary-color: black;
     --secondary-color: #ffffff;
@@ -43,7 +46,7 @@ main {
 .card-container { /*essentially the gameplay area*/
     position: relative;
     height: 100%;
-    width: calc(var(--num-rows)*var(--card-width) + var(--card-horizontal-space));
+    width: calc(var(--num-rows)*var(--card-width-lg) + var(--card-horizontal-space-lg));
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
@@ -84,11 +87,11 @@ main {
 
 .card {
     position:absolute;
-    width: var(--card-width);
-    height: var(--card-height);
+    width: var(--card-width-lg);
+    height: var(--card-height-lg);
     perspective: 1000px;
     cursor: pointer;
-    transition: transform 0.6s ease-in-out
+    transition: transform 0.3s
 }
 
 .card-inner {
@@ -194,7 +197,8 @@ header {
   box-shadow: rgba(0, 0, 0, 0.1) 0 2px 4px;
   color: #FFFFFF;
   cursor: pointer;
-  display: inline-block;
+  /*display: inline-block; */
+  display: none;
   font-family: Inter,-apple-system,system-ui,Roboto,"Helvetica Neue",Arial,sans-serif;
   height: 40px;
   line-height: 40px;
@@ -207,12 +211,18 @@ header {
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
-  vertical-align: top;
+  vertical-align: middle;
   white-space: nowrap;
   width: 100%;
   z-index: 9;
   border: 0;
   transition: box-shadow .2s;
+  animation: play-game-button-fade-in 2s 1;
+}
+
+.game-play-button-container {
+    width: 150px;
+    height: 40px;
 }
 
 .play-game:hover {
@@ -226,11 +236,58 @@ header {
     background-image: linear-gradient(-180deg, grey, grey);
 }*/
 
-/*cards shuffling to the left*/
+/*Cards shuffling to the left*/
 .card.shuffle-left {
-    transform: translateX(-300px) translateY(40px);
+    transform: translateX(-200px) translateY(40px);
 }
 
+
+/*Cards shuffling to the right*/
 .card.shuffle-right {
     transform: translateX(200px) translateY(-40px);
+}
+
+.card.fly-in {
+    transform: translateY(-1000px) translateX(-600px) rotate(45deg)
+}
+
+/*Control the opacity the play-game button*/
+@keyframes play-game-button-fade-in {
+    from{opacity: 0;}
+    tp{opacity: 1;}
+}
+
+/*Responsive layout*/
+@media screen and (max-width: 600px) {
+    .card {
+        width: var(--card-width-sm);
+        height: var(--card-height-sm);
+    }
+
+    .card-container {
+        width: calc(var(--num-rows)*var(--card-width-sm) + var(--card-horizontal-space-sm));
+    }
+
+    main {
+        height: 50%;
+    }
+
+    .current-status {
+        font-size: 1.2rem;
+    }
+
+    .game-play-button-container {
+        width: 120px;
+        height: 40px;
+    }
+
+    .play-game {
+        padding: 0 8px;
+        font-size: 11px;
+        min-height: 40px;
+    }
+
+    .header-img {
+        height: 55px;
+    }
 }
