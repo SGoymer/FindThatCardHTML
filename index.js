@@ -12,9 +12,19 @@ let gameInProgress = false
 let shufflingInProgress = false
 let cardsRevealed = false
 
-const currentGameStatusElem = document.querySelector("current-status")
+const currentGameStatusElem = document.querySelector(".current-status")
+const scoreContainerElem = document.querySelector(".header-score-container")
+const scoreElem = document.querySelector(".score")
+const roundContainerElem = document.querySelector(".header-round-container")
+const roundElem = document.querySelector(".round")
+
 const winColour = "green"
-const loseColor = "red"
+const loseColour = "red"
+const primaryColour = "black"
+
+let roundNum = 0
+const maxRounds = 4
+let score = 0
 
 //id of the "correct" card
 const correctCardId = 4
@@ -81,6 +91,11 @@ function addCardToGridCell(cardElem) {
     addChildElement(cardPosElem, cardElem)
 }
 
+//Attach an click event listener to a card element. Adding this listener will mean chooseCard(card) is run whenever the card is clickeds
+function attachClickEventHandlerToCard(cardElem) {
+    cardElem.addEventListener("click", () => chooseCard(cardElem))
+}
+
 function initialiseCardPositions(cardElem) {
     //Add card id to cardPositions
     cardPositions.push(cardElem.id)
@@ -139,6 +154,8 @@ function createCard(cardItem) {
 
    initialiseCardPositions(cardElem)
 
+   attachClickEventHandlerToCard(cardElem)
+
 }    
 
 //Now create a card for each item in the cardObjectDefinitions array
@@ -196,7 +213,23 @@ function flipCards(flipToBack) {
     })
 }
 
+//Animate the shuffling of the cards
+function animateShuffle(shuffleCount) {
+    const random1 = Math.floor(Math.random() * numCards) + 1
+    const random2 = Math.floor(Math.random() * numCards) + 1
 
+    let card1 = document.getElementById(random1)
+    let card2 = document.getElementById(random2)
+
+    if(shuffleCount % 9 == 0) {
+        card1.classList.toggle("shuffle-left")
+        card1.style.zIndex = 100
+    }
+    if(shuffleCount % 2 == 1) {
+        card2.classList.toggle("shuffle-right")
+        card2.style.zIndex = 200
+    }
+}
 
 function randomiseCardPositions() {
     //generate two random numbers in [1, 2, ..., numCards]
@@ -252,6 +285,14 @@ function dealCards() {
     transformGridArea(areasTemplate)
 }
 
+//Get rid of shuffle animations for cards when done shuffling
+function removeShuffleClasses() {
+    cards.forEach((card) => {
+        card.classList.remove("shuffle-left")
+        card.classList.remove("shuffle-right")
+    })
+}
+
 //Shuffle cards
 function shuffleCards() {
     const id = setInterval(shuffle, 12)
@@ -262,10 +303,15 @@ function shuffleCards() {
         //Swap the order of two cards
         randomiseCardPositions()
 
+        animateShuffle(shuffleCount)
+
         //After 500 swaps, stop and deal the cards
         if(shuffleCount == 500) {
             clearInterval(id)
+            shufflingInProgress = false
+            removeShuffleClasses()
             dealCards()
+            updateStatusElement(currentGameStatusElem, "block", primaryColour, "Please click the card that you think is the correct one")
         } else {
             shuffleCount++
         }
@@ -275,11 +321,32 @@ function shuffleCards() {
 //Initialise a new game
 function initialiseNewGame() {
 
+    //Reset game stats
+    roundNum = 0
+    score = 0
+
+    shufflingInProgress = false
+
+    //Make the score and round container elements visible
+    updateStatusElement(scoreContainerElem, "flex")
+    updateStatusElement(roundContainerElem, "flex")
+
+    updateStatusElement(scoreElem, "block", primaryColour, `Score: <span class = "badge">${score}</span>`)
+    updateStatusElement(roundElem, "block", primaryColour, `Round: <span class = "badge">${roundNum}</span>`)
+
 }
 
 //Initialise a new round
 function initialiseNewRound() {
+    roundNum++
+    //playGameButtonElem.disabled = true
+    
+    gameInProgress = true
+    shufflingInProgress = true
+    cardsRevealed = false
 
+    updateStatusElement(currentGameStatusElem, "block", primaryColour, "Shuffling...")
+    updateStatusElement(roundElem, "block", primaryColour, `Round: <span class = "badge">${roundNum}</span>`)
 }
 
 //Start a new round
@@ -290,9 +357,21 @@ function startRound() {
     shuffleCards()
 }
 
+function endRound() {
+    setTimeout(() => {
+        if(roundNum == maxRounds) {
+            gameOver()
+            return
+        } else {
+            startRound()
+        }
+    })
+}
+
 
 //Start the game (when user clicks the playGame button)
 function startGame() {
+    updateStatusElement(playGameButtonElem, "none")
     initialiseNewGame()
     startRound()
 }
@@ -309,8 +388,22 @@ function loadGame() {
     //Wire up a click event to the playGame button
     //Note: ()=> is shorthand for a lambda function that takes no arguments
     playGameButtonElem.addEventListener("click", ()=>startGame())
+
+    updateStatusElement(scoreContainerElem, "none")
+    updateStatusElement(roundContainerElem, "none")
 }
 
+function gameOver() {
+    updateStatusElement(scoreContainerElem, "none")
+    updateStatusElement(roundContainerElem, "none")
+
+    const gameOverMessage = `Game Over! Final score: <span class = "badge">${score}</span> points.
+                             Click "Play Again" if you want another crack at it`
+
+    updateStatusElement(currentGameStatusElem, "block", primaryColour, gameOverMessage)
+    updateStatusElement(playGameButtonElem, "flex", "", `<button id = "playGame" class="play-game" role="button">Play Again</button>`)
+    playGameButtonElem.disabled = false
+}
 
 //Check if the user should be allowed to select a card
 function canChooseCard() {
@@ -318,9 +411,24 @@ function canChooseCard() {
 }
 
 //Choose a card. Allow only if can ChooseCard
-function chooseCard() {
+function chooseCard(cardElem) {
     if(canChooseCard()) {
+        evalulateCardChoice(cardElem)
 
+        //Flip over the chosen card
+        flipCard(cardElem, false)
+
+        //Flip over all the cards after a 3s delay
+        setTimeout(() => {
+            flipCards(false)
+            updateStatusElement(currentGameStatusElem, "block", primaryColour, "This is where all the cards were")
+        }, 3000)
+
+        setTimeout(() => {
+            endRound()
+        }, 6000)
+        
+        cardsRevealed = true
     }
 }
 
@@ -331,7 +439,9 @@ function updateStatusElement(elem, display, color, innerHTML) {
 
     //Only change the color/innerHTML if at least one is specified
     if(arguments.length > 2) {
-        elem.style.color = color
+        if(!color == "") {
+            elem.style.color = color
+        }
         elem.innerHTML = innerHTML
     }
 }
@@ -345,10 +455,32 @@ function outputChoiceFeedBack(hit) {
     }
 }
 
+function calculateScoreToAdd(roundNum) {
+    if(roundNum == 1) {
+        return 100
+    } else if(roundNum == 2) {
+        return 50
+    } else if(roundNum == 3) {
+        return 25
+    } else {
+        return 10
+    }
+}
+
+function calculateScore() {
+    let scoreToAdd = calculateScoreToAdd(roundNum)
+    return scoreToAdd
+}
+
+function updateScore() {
+    scoreToAdd = calculateScore()
+    score += scoreToAdd
+    updateStatusElement(scoreElem, "block", primaryColour, `Score: <span class = "badge">${score}</span>`)
+}
 
 //Check if the card is the "correct" one and output the appropriate feedback to user
 function evalulateCardChoice(card) {
-    if(card.id = correctCardId) {
+    if(card.id == correctCardId) {
         //Give the user points
         updateScore()
         outputChoiceFeedBack(true)

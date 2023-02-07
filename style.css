@@ -1,3 +1,6 @@
+/*Quicksand font from Google*/
+@import url('https://fonts.googleapis.com/css2?family=Quicksand&display=swap');
+
 :root {
     --card-width: 157px;
     --card-height: 220px;
@@ -6,10 +9,28 @@
     --num-rows: 2;
     --num-columns: 2;
     --card-horizontal-space: 100px;
+    --badge-bg-color: red;
+    --primary-color: black;
+    --secondary-color: #ffffff;
+
+    --primary-font: "Quicksand", sans-serif;
+}
+
+/*Add Helvetica font*/
+/* 
+* {
+    font-size: 100%;
+    font-family: Helvetica, sans-serif;
+}
+*/
+
+h1 {
+    font-size: 300%;
 }
 
 body {
     height:100vh; /* body will take up 100% of screen View Height */
+    font-family: var(--primary-font);
 }
 
 main {
@@ -67,6 +88,7 @@ main {
     height: var(--card-height);
     perspective: 1000px;
     cursor: pointer;
+    transition: transform 0.6s ease-in-out
 }
 
 .card-inner {
@@ -105,4 +127,110 @@ main {
 /*flip the card when it is given the flip-it property*/
 .card-inner.flip-it {
     transform : rotateY(180deg);
+}
+
+header {
+    display: flex;
+    /*puts the elements on top of each other rather than side to side*/
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.header-title-container {
+    display: flex;
+    justify-content: center;
+}
+
+.header-round-info-container {
+    font-size: 150%;
+    display: flex;
+    /*space all items in this container evenly */
+    justify-content: space-evenly;
+}
+
+.current-status {
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.header-status-info-container,
+.header-button-container,
+.header-score-container,
+.header-round-container,
+.header-img-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.header-score-container,
+.header-round-container,
+.header-img-container {
+    width: 200px;
+}
+
+.header-img {
+    height: 75px;
+    /*round the corners*/
+    border-radius: 5px;
+    border: 1px solid black;
+    padding: 5px;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transform: rotate(-3deg);
+}
+
+.badge {
+    background-color: var(--badge-bg-color);
+    color: var(--secondary-color);
+    padding: 2px 10px 3px;
+    border-radius: 15px;
+}
+
+
+.play-game {
+  background-color: initial;
+  background-image: linear-gradient(-180deg, #FF7E31, #E62C03);
+  border-radius: 6px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0 2px 4px;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: inline-block;
+  font-family: Inter,-apple-system,system-ui,Roboto,"Helvetica Neue",Arial,sans-serif;
+  height: 40px;
+  line-height: 40px;
+  outline: 0;
+  overflow: hidden;
+  padding: 0 20px;
+  pointer-events: auto;
+  position: relative;
+  text-align: center;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  vertical-align: top;
+  white-space: nowrap;
+  width: 100%;
+  z-index: 9;
+  border: 0;
+  transition: box-shadow .2s;
+}
+
+.play-game:hover {
+  box-shadow: rgba(253, 76, 0, 0.5) 0 3px 8px;
+}
+
+
+/*
+.play-game:disabled,
+.play-game[disabled] {
+    background-image: linear-gradient(-180deg, grey, grey);
+}*/
+
+/*cards shuffling to the left*/
+.card.shuffle-left {
+    transform: translateX(-300px) translateY(40px);
+}
+
+.card.shuffle-right {
+    transform: translateX(200px) translateY(-40px);
 }
